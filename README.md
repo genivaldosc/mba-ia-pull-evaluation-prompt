@@ -500,6 +500,18 @@ Abaixo estão as evidências de execução da avaliação do prompt otimizado (`
 
 ![Resultados da Avaliação](assets/eval-results.png)
 
+**3. Dataset de avaliação no LangSmith (15 exemplos):**
+
+![Dataset de Avaliação](assets/data-set.png)
+
+**4. Tracing detalhado do prompt v1 (baixa qualidade):**
+
+![Tracing v1](assets/tracing.png)
+
+**5. Tracing detalhado do prompt v2 (otimizado):**
+
+![Tracing v2](assets/tracing-v2.png)
+
 ### Tabela Comparativa: Prompt v1 (ruim) vs v2 (otimizado)
 
 | Métrica | v1 (baixa qualidade) | v2 (otimizado) | Status |
