@@ -173,6 +173,10 @@ Após refatorar os prompts, você deve enviá-los de volta ao LangSmith Prompt H
 2. Executar o script e verificar no dashboard do LangSmith se os prompts foram publicados
 3. Deixá-lo público
 
+**Prompt publicado no LangSmith Hub:**
+
+🔗 [genivaldocouto/bug_to_user_story_v2](https://smith.langchain.com/hub/genivaldocouto/bug_to_user_story_v2?organizationId=8597dbf8-5ec1-4de1-9a6f-5a34cf43abad)
+
 ---
 
 ### 4. Iteração
