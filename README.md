@@ -384,45 +384,146 @@ python -c "import langchain; import langsmith; from langchain_google_genai impor
 
 ### Ordem de execução do projeto
 
-Com o venv ativado e o `.env` configurado, execute as fases na sequência:
+Com o venv ativado e o `.env` configurado, execute as fases na sequência abaixo. Cada fase depende da anterior.
 
 #### Fase 1 — Pull do prompt inicial (ruim)
 
-Faz o download do prompt de baixa qualidade do LangSmith Prompt Hub:
+Faz o download do prompt de baixa qualidade (`leonanluppi/bug_to_user_story_v1`) do LangSmith Prompt Hub e salva localmente em YAML.
 
 ```bash
 python src/pull_prompts.py
 ```
 
-O prompt será salvo em `prompts/bug_to_user_story_v1.yml`.
+**O que o script faz:**
+- Conecta ao LangSmith usando `LANGSMITH_API_KEY`
+- Faz `pull` do prompt `leonanluppi/bug_to_user_story_v1`
+- Extrai `system_prompt` e `user_prompt` do `ChatPromptTemplate`
+- Salva em `prompts/bug_to_user_story_v1.yml`
+
+**Saída esperada:**
+```
+📥 Baixando prompt do LangSmith Hub...
+✅ Prompt baixado com sucesso: ChatPromptTemplate
+💾 Salvando prompt em: prompts/bug_to_user_story_v1.yml
+✅ Prompt salvo com sucesso!
+   - System prompt: XXX caracteres
+   - User prompt: XXX caracteres
+🎉 Operação concluída com sucesso!
+```
+
+> ⚠️ **Pré-requisito:** `LANGSMITH_API_KEY` configurada no `.env`.
+
+---
 
 #### Fase 2 — Refatorar o prompt
 
 Edite manualmente o arquivo `prompts/bug_to_user_story_v2.yml` aplicando as técnicas de Prompt Engineering aprendidas (Few-shot, CoT, Role Prompting, etc.).
 
+**Checklist da refatoração:**
+- [ ] Definir persona clara (Role Prompting)
+- [ ] Incluir instruções passo a passo (Chain of Thought)
+- [ ] Adicionar 2-3 exemplos de entrada/saída (Few-shot Learning)
+- [ ] Estruturar a saída em seções fixas (Skeleton of Thought)
+- [ ] Tratar edge cases (bug vazio, ambíguo, em outro idioma, etc.)
+- [ ] Preencher `techniques_applied` com no mínimo 2 técnicas
+- [ ] Remover todos os marcadores `[TODO]`
+
+> 💡 Consulte a seção [Técnicas de Prompt Engineering Aplicadas](#21-técnicas-de-prompt-engineering-aplicadas) para ver as técnicas escolhidas neste projeto.
+
+---
+
 #### Fase 3 — Push do prompt otimizado
 
-Envia o prompt refatorado de volta ao LangSmith Prompt Hub:
+Envia o prompt refatorado de volta ao LangSmith Prompt Hub (como público) com metadados (tags, descrição, técnicas).
 
 ```bash
 python src/push_prompts.py
 ```
 
+**O que o script faz:**
+- Carrega `prompts/bug_to_user_story_v2.yml`
+- Valida campos obrigatórios (`system_prompt`, `user_prompt`, `version`, `techniques_applied`)
+- Cria um `ChatPromptTemplate` e publica no Hub
+- Tenta publicar como **PÚBLICO**; se o handle público não existir, publica como **PRIVADO**
+
+**Saída esperada:**
+```
+📤 Publicando prompt: bug_to_user_story_v2
+   - Descrição: ...
+   - Tags: [...]
+   - Técnicas: [...]
+✅ Prompt publicado como PÚBLICO no LangSmith Hub!
+   - URL: https://smith.langchain.com/hub/{username}/bug_to_user_story_v2
+🎉 Operação concluída com sucesso!
+```
+
+> ⚠️ **Pré-requisitos:** `LANGSMITH_API_KEY` e `USERNAME_LANGSMITH_HUB` configuradas no `.env`.
+>
+> 💡 Se o prompt já estiver atualizado, o script exibe "sem mudanças" (idempotente).
+
+---
+
 #### Fase 4 — Avaliação
 
-Executa a avaliação automática com as 5 métricas (meta: todas ≥ 0.8):
+Executa a avaliação automática do prompt otimizado contra o dataset de 15 exemplos, calculando 5 métricas (meta: todas ≥ 0.8).
 
 ```bash
 python src/evaluate.py
 ```
 
+**O que o script faz:**
+- Carrega o dataset de `datasets/bug_to_user_story.jsonl`
+- Cria (ou reutiliza) o dataset no LangSmith
+- Faz `pull` do prompt `{username}/bug_to_user_story_v2` do Hub
+- Executa o prompt contra os 15 exemplos usando o LLM configurado
+- Calcula as métricas: **F1-Score**, **Clarity**, **Precision** (base) e **Helpfulness**, **Correctness** (derivadas)
+- Exibe o resumo no terminal e publica os resultados no LangSmith
+
+**Saída esperada:**
+```
+Provider: google
+Modelo Principal: gemini-2.5-flash
+Modelo de Avaliação: gemini-2.5-flash
+
+🔍 Avaliando: {username}/bug_to_user_story_v2
+   Dataset: 15 exemplos
+   Avaliando exemplos...
+      [1/15] F1:0.93 Clarity:0.95 Precision:0.92
+      ...
+==================================================
+Prompt: {username}/bug_to_user_story_v2
+==================================================
+Métricas Derivadas:
+  - Helpfulness: 0.94 ✓
+  - Correctness: 0.96 ✓
+Métricas Base:
+  - F1-Score: 0.93 ✓
+  - Clarity: 0.95 ✓
+  - Precision: 0.92 ✓
+✅ STATUS: APROVADO - Todas as métricas >= 0.8
+```
+
+> ⚠️ **Pré-requisitos:** `LANGSMITH_API_KEY`, `LLM_PROVIDER` e a chave do provider escolhido (`GOOGLE_API_KEY` ou `OPENAI_API_KEY`) no `.env`.
+>
+> 🔁 **Iteração:** Se alguma métrica ficar abaixo de 0.8, edite o prompt (Fase 2), refaça o push (Fase 3) e avalie novamente (Fase 4). Espera-se de 3 a 5 iterações.
+
+---
+
 #### Fase 5 — Testes de validação
 
-Roda os testes automatizados com `pytest`:
+Roda os testes automatizados com `pytest` para validar a estrutura do prompt:
 
 ```bash
 pytest tests/test_prompts.py -v
 ```
+
+**Testes executados:**
+- `test_prompt_has_system_prompt` — campo `system_prompt` existe e não está vazio
+- `test_prompt_has_role_definition` — prompt define uma persona
+- `test_prompt_mentions_format` — prompt exige formato Markdown ou User Story
+- `test_prompt_has_few_shot_examples` — prompt contém exemplos Few-shot
+- `test_prompt_no_todos` — não há marcadores `[TODO]` no texto
+- `test_minimum_techniques` — pelo menos 2 técnicas listadas nos metadados
 
 ### Reativar o venv em sessões futuras
 
