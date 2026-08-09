@@ -249,40 +249,181 @@ mba-ia-pull-evaluation-prompt/
 - [LangSmith Documentation](https://docs.smith.langchain.com/)
 - [Prompt Engineering Guide](https://www.promptingguide.ai/)
 
-## VirtualEnv para Python
+## Como Executar
 
-Crie e ative um ambiente virtual antes de instalar dependências:
+### Pré-requisitos
+
+- **Python 3.9+** instalado ([https://www.python.org/downloads/](https://www.python.org/downloads/))
+- **Conta no LangSmith** ([https://smith.langchain.com/](https://smith.langchain.com/)) com API Key configurada
+- **API Key de um LLM Provider** (escolha um):
+  - **Google Gemini (gratuito, recomendado):** [https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
+  - **OpenAI (pago):** [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+- **Git** instalado ([https://git-scm.com/](https://git-scm.com/))
+
+### 1. Clonar o repositório
 
 ```bash
+git clone https://github.com/genivaldosc/mba-ia-pull-evaluation-prompt.git
+cd mba-ia-pull-evaluation-prompt
+```
+
+> Se você já tem o projeto localmente, pule este passo.
+
+### 2. Criar e ativar o ambiente virtual (venv)
+
+Crie e ative um ambiente virtual antes de instalar as dependências:
+
+```bash
+# Criar o venv
 python3 -m venv venv
-source venv/bin/activate  # No Windows: venv\Scripts\activate
+
+# Ativar o venv
+source venv/bin/activate          # macOS / Linux
+# venv\Scripts\activate           # Windows (PowerShell)
+# venv\Scripts\activate.bat       # Windows (CMD)
+```
+
+> 💡 Você saberá que o venv está ativo quando o prefixo `(venv)` aparecer no terminal.
+>
+> Para desativar quando terminar: `deactivate`
+
+### 3. Instalar as dependências
+
+Com o venv ativado, instale todas as dependências do projeto:
+
+```bash
+pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
----
+**Dependências instaladas:**
 
-## Ordem de execução
+| Pacote | Versão | Finalidade |
+|---|---|---|
+| `langchain` | 0.3.13 | Framework principal de orquestração |
+| `langchain-core` | 0.3.28 | Core do LangChain |
+| `langchain-community` | 0.3.13 | Integrações extras da comunidade |
+| `langsmith` | 0.2.7 | Gestão de prompts e avaliação |
+| `langchain-openai` | 0.2.14 | Integração com LLMs OpenAI |
+| `langchain-google-genai` | 2.0.8 | Integração com LLMs Google Gemini |
+| `python-dotenv` | 1.0.1 | Carregamento de variáveis `.env` |
+| `pyyaml` | 6.0.2 | Leitura/escrita de prompts em YAML |
+| `pydantic` | 2.10.4 | Validação de dados |
+| `pytest` | 8.3.4 | Framework de testes |
 
-### 1. Executar pull dos prompts ruins
+### 4. Configurar variáveis de ambiente
+
+Copie o arquivo de exemplo e preencha com suas credenciais:
+
+```bash
+cp .env.example .env
+```
+
+Edite o arquivo `.env` com suas chaves:
+
+```env
+# LangSmith Configuration
+LANGSMITH_TRACING=true
+LANGSMITH_ENDPOINT=https://api.smith.langchain.com
+LANGSMITH_API_KEY=<sua_chave_langsmith>
+LANGSMITH_PROJECT=<nome_do_projeto>
+
+# Seu username no LangSmith Hub
+# Para descobrir: publique qualquer prompt no Hub, abra-o e clique no ícone 🔒
+USERNAME_LANGSMITH_HUB=<seu_username>
+
+# OpenAI (opcional - se usar provider openai)
+OPENAI_API_KEY=<sua_chave_openai>
+
+# Google Gemini (recomendado - gratuito)
+GOOGLE_API_KEY=<sua_chave_google>
+
+# Escolha do provider e modelos
+LLM_PROVIDER=google              # ou "openai"
+LLM_MODEL=gemini-2.5-flash       # modelo para responder
+EVAL_MODEL=gemini-2.5-flash      # modelo para avaliação
+```
+
+**Onde obter as credenciais:**
+
+| Serviço | Onde obter | Custo |
+|---|---|---|
+| LangSmith API Key | [https://smith.langchain.com/](https://smith.langchain.com/) | Free tier disponível |
+| Google Gemini API Key | [https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) | Gratuito (15 req/min, 1500 req/dia) |
+| OpenAI API Key | [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys) | Pago (~$1-5 para o desafio) |
+
+> 💡 **Para descobrir seu `USERNAME_LANGSMITH_HUB`:** publique qualquer prompt no LangSmith Hub, abra-o e clique no ícone de cadeado (🔒) para visualizar seu username.
+
+### 5. Verificar a instalação
+
+Valide que tudo está configurado corretamente:
+
+```bash
+python -c "import langchain; import langsmith; from langchain_google_genai import ChatGoogleGenerativeAI; print('✅ Dependências instaladas com sucesso!')"
+```
+
+### Ordem de execução do projeto
+
+Com o venv ativado e o `.env` configurado, execute as fases na sequência:
+
+#### Fase 1 — Pull do prompt inicial (ruim)
+
+Faz o download do prompt de baixa qualidade do LangSmith Prompt Hub:
 
 ```bash
 python src/pull_prompts.py
 ```
 
-### 2. Refatorar prompts
+O prompt será salvo em `prompts/bug_to_user_story_v1.yml`.
 
-Edite manualmente o arquivo `prompts/bug_to_user_story_v2.yml` aplicando as técnicas aprendidas no curso.
+#### Fase 2 — Refatorar o prompt
 
-### 3. Fazer push dos prompts otimizados
+Edite manualmente o arquivo `prompts/bug_to_user_story_v2.yml` aplicando as técnicas de Prompt Engineering aprendidas (Few-shot, CoT, Role Prompting, etc.).
+
+#### Fase 3 — Push do prompt otimizado
+
+Envia o prompt refatorado de volta ao LangSmith Prompt Hub:
 
 ```bash
 python src/push_prompts.py
 ```
 
-### 4. Executar avaliação
+#### Fase 4 — Avaliação
+
+Executa a avaliação automática com as 5 métricas (meta: todas ≥ 0.8):
 
 ```bash
 python src/evaluate.py
+```
+
+#### Fase 5 — Testes de validação
+
+Roda os testes automatizados com `pytest`:
+
+```bash
+pytest tests/test_prompts.py -v
+```
+
+### Reativar o venv em sessões futuras
+
+Sempre que voltar a trabalhar no projeto:
+
+```bash
+cd mba-ia-pull-evaluation-prompt
+source venv/bin/activate
+```
+
+### Resumo rápido (setup completo)
+
+```bash
+git clone https://github.com/genivaldosc/mba-ia-pull-evaluation-prompt.git
+cd mba-ia-pull-evaluation-prompt
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+cp .env.example .env   # edite com suas chaves
+python src/pull_prompts.py
 ```
 
 ---
