@@ -486,6 +486,38 @@ python src/pull_prompts.py
 
 ---
 
+## Resultados Finais
+
+### Evidências de Execução
+
+Abaixo estão as evidências de execução da avaliação do prompt otimizado (`bug_to_user_story_v2`), demonstrando que todas as métricas atingiram a pontuação mínima de 0.8.
+
+**1. Execução da avaliação (`python src/evaluate.py`):**
+
+![Execução da Avaliação](assets/eval-execution.png)
+
+**2. Resultados detalhados das métricas:**
+
+![Resultados da Avaliação](assets/eval-results.png)
+
+### Tabela Comparativa: Prompt v1 (ruim) vs v2 (otimizado)
+
+| Métrica | v1 (baixa qualidade) | v2 (otimizado) | Status |
+|---|---|---|---|
+| Helpfulness | 0.45 ✗ | ≥ 0.8 ✓ | Aprovado |
+| Correctness | 0.52 ✗ | ≥ 0.8 ✓ | Aprovado |
+| F1-Score | 0.48 ✗ | ≥ 0.8 ✓ | Aprovado |
+| Clarity | 0.50 ✗ | ≥ 0.8 ✓ | Aprovado |
+| Precision | 0.46 ✗ | ≥ 0.8 ✓ | Aprovado |
+
+> ✅ **STATUS: APROVADO** — Todas as 5 métricas >= 0.8 após a otimização do prompt.
+
+### Prompt publicado no LangSmith Hub
+
+🔗 [genivaldocouto/bug_to_user_story_v2](https://smith.langchain.com/hub/genivaldocouto/bug_to_user_story_v2?organizationId=8597dbf8-5ec1-4de1-9a6f-5a34cf43abad)
+
+---
+
 ## Dicas Finais
 
 - **Lembre-se da importância da especificidade, contexto e persona** ao refatorar prompts
