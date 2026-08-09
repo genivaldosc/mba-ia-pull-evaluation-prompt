@@ -143,6 +143,22 @@ Agora que você tem o prompt inicial, é hora de refatorá-lo usando as técnica
 
 ---
 
+### 2.1 Técnicas de Prompt Engineering Aplicadas
+
+O prompt otimizado em `prompts/bug_to_user_story_v2.yml` utiliza as seguintes técnicas:
+
+| Técnica | Onde foi aplicada | Por quê |
+|---|---|---|
+| **Role Prompting** | Seção `# PERSONA E CONTEXTO` — define o modelo como "Product Manager Sênior" | Define persona, tom e nível de especialidade, garantindo respostas profissionais e acionáveis |
+| **Chain of Thought (CoT)** | Seção `# INSTRUÇÕES PASSO-A-PASSO` — 6 etapas sequenciais (análise de complexidade → extração → construção → critérios → seções → revisão) | Guia o raciocínio do modelo passo a passo, reduzindo omissões e melhorando a completude |
+| **Few-Shot Learning** | Seção `# EXEMPLOS` — 3 exemplos de entrada/saída (Simples, Médio, Complexo) | Demonstra o padrão esperado de saída para cada nível de complexidade, calibrando o formato e a qualidade |
+| **Skeleton of Thought** | Estrutura fixa de seções (`=== USER STORY PRINCIPAL ===`, `=== CRITÉRIOS DE ACEITAÇÃO ===`, etc.) | Padroniza a saída em blocos claros, facilitando validação e consumo pelo time |
+| **Tratamento de Edge Cases** | Seção `# TRATAMENTO DE EDGE CASES` | Cobre cenários atípicos: bug vazio, ambíguo, conflitante, em outro idioma ou muito curto |
+
+**Regras explícitas de comportamento** estão documentadas na seção `# REGRAS IMPORTANTES`, cobrindo formato de saída, critérios de aceite (Gherkin), completude, priorização e tom.
+
+---
+
 ### 3. Push e Avaliação
 
 Após refatorar os prompts, você deve enviá-los de volta ao LangSmith Prompt Hub.
